@@ -1,0 +1,17 @@
+---
+- name: Write a playbook that gathers system information and prints
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: OS Family
+      debug:
+        msg: "This system belongs to OS Family: {{ ansible_os_family }}"
+
+    - name: IP Address
+      debug:
+        msg: "This {{ ansible_default_ipv4.address }}"
+
+    - name: Memory Info
+      debug:
+        msg: "memory {{ ansible_memtotal_mb }}"

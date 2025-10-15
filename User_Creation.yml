@@ -1,0 +1,13 @@
+---
+- name: Lab4 – User Creation Playbook
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Create user devuser
+      user:
+        name: devuser
+        shell: /bin/bash
+        append: yes
+
+    

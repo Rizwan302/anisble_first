@@ -1,0 +1,90 @@
+---
+- name: Creating a project26 playbook
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Create project user
+      user:
+        name: project
+        state: present
+
+    - name: create directory project26
+      file:
+        path: /home/project/project26
+        state: directory
+        owner: project
+        group: project
+        mode: '0755'
+
+    - name: Assign sudo privilege to project user
+      copy:
+        dest: /etc/sudoers.d/project
+        content: "project ALL=(ALL) NOPASSWD: ALL"
+        mode: '0440'
+
+    - name: Create .ssh directory
+      file:
+        path: /home/project/.ssh
+        state: directory
+        owner: project
+        owner: project
+        mode: '0700'
+
+    - name: Generate SSH keys for user project
+      openssh_keypair:
+        path: /home/project/.ssh/id_rsa
+        type: rsa
+      become_user: project
+      register: ssh_key
+      notify: Setauthorized
+
+    - name: Install the latest version of nmap
+      yum:
+        name: nmap
+        state: present
+
+    - name: Install chrony package
+      yum:
+        name: chrony
+        state: latest
+
+    - name: Install httpd package
+      yum:
+        name: httpd
+        state: latest
+
+    - name: Start and enable service chronyd
+      service:
+        name: chronyd
+        state: started
+        enabled: yes
+
+    - name: Restart and enable service httpd
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Permanently enable http service, also enable it immediately if possible
+      firewalld:
+        service: http
+        state: enabled
+        permanent: yes
+        immediate: yes
+
+    - name: Add contents if index.html
+      copy:
+        dest: /var/www/html/index.html
+        content: "I am learning ansible"
+
+
+  handlers:
+    - name: Setauthorized
+      authorized_key:
+        user: project
+        state: present
+        key: "{{ lookup('file', '/home/project/.ssh/id_rsa.pub') | default(ssh_key.public_key, true)}}"
+
+
+

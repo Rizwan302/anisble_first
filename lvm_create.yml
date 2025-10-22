@@ -1,0 +1,66 @@
+---
+- name: LVM Creation Automation
+  hosts: all
+  become: yes
+  vars:
+    disks:
+      - /dev/sdb
+      - /dev/sdc
+    vg: vg_logs
+    LV1: lv_old_logs
+    LV2: lv_new_logs
+    dir_path:
+      - /app/old/logs
+      - /app/new/logs
+
+  tasks:
+    - name: Create a Volume 
+      lvg:
+        vg: "{{ vg  }}"
+        pvs: 
+          - /dev/sdb
+          - /dev/sdc
+    
+    - name: Create a Logical Volume by "{{ disks[0] }}"
+      lvol:
+        vg: "{{ vg }}"
+        lv: "{{ LV1 }}"
+        size: 500M
+        force: true
+
+    - name: Create a Logical Volume by "{{ disks[1] }}"
+      lvol:
+        vg: "{{ vg }}"
+        lv: "{{ LV2 }}"
+        size: 1G
+        force: true
+
+
+    - name: Mount the "{{ LV1 }}" logical volume permanently
+      mount:
+        path: "{{ dir_path[0] }}"
+        src: "/dev/{{ vg  }}/{{ LV1 }}"
+        fstype: ext4
+        state: mounted
+
+
+    - name: Mount the "{{ LV2 }}" logical volume permanently
+      mount:
+        path: "{{ dir_path[1] }}"
+        src: "/dev/{{ vg  }}/{{ LV2 }}"
+        fstype: xfs
+        state: mounted
+      
+
+
+
+
+
+    
+
+
+    
+    
+    
+
+
